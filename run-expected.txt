@@ -1,0 +1,66 @@
+Java 25.0.4.1
+
+[사실 1] filter, map 만 붙이고 최종 연산은 아직 안 부름
+[사실 1]   스트림 만든 뒤 filter/map 실행 횟수 = 0
+[사실 1] 이제 collect(최종 연산) 부름
+[사실 1]   filter 1
+[사실 1]   filter 2
+[사실 1]   map 2
+[사실 1]   filter 3
+[사실 1]   filter 4
+[사실 1]   map 4
+[사실 1]   filter 5
+[사실 1]   filter 6
+[사실 1]   map 6
+[사실 1]   collect 뒤 실행 횟수 = 9, 결과 = [20, 40, 60]
+
+[사실 2] 원소 1,2,3,4 를 filter(짝수) -> map(x10) -> forEach
+[사실 2]   filter 1
+[사실 2]   filter 2
+[사실 2]   map 2
+[사실 2]   forEach 20
+[사실 2]   filter 3
+[사실 2]   filter 4
+[사실 2]   map 4
+[사실 2]   forEach 40
+[사실 2] 원소 3,1,4,2 를 peek -> sorted (상태 연산) -> map -> forEach
+[사실 2]   peek(정렬 전) 3
+[사실 2]   peek(정렬 전) 1
+[사실 2]   peek(정렬 전) 4
+[사실 2]   peek(정렬 전) 2
+[사실 2]   map 1
+[사실 2]   forEach 10
+[사실 2]   map 2
+[사실 2]   forEach 20
+[사실 2]   map 3
+[사실 2]   forEach 30
+[사실 2]   map 4
+[사실 2]   forEach 40
+
+[사실 3] 원소 1,000,000 개 (0..999999)
+[사실 3]   findFirst(7로 나눠 3 남는 첫 수) = 3, 지나간 원소 = 4
+[사실 3]   filter(짝수).limit(5) = [0, 2, 4, 6, 8], 지나간 원소 = 9
+[사실 3]   anyMatch(n > 41) = true, 지나간 원소 = 43
+[사실 3]   (예외) anyMatch(n < 0), 맞는 게 없음 = false, 지나간 원소 = 1000000
+[사실 3]   (덤) 이미 정렬된 원본(range)에 sorted().findFirst() = 0, 지나간 원소 = 1 (정렬 표시가 있어 sorted 를 건너뜀)
+[사실 3]   (예외) 섞인 원본에 sorted().findFirst() = 0, 지나간 원소 = 1000000
+
+[사실 4] 같은 스트림에 최종 연산을 두 번
+[사실 4]   1번째 count = 6
+[사실 4]   2번째 -> IllegalStateException: stream has already been operated upon or closed
+[사실 4]   (덤) 중간 연산을 붙인 원래 스트림에 또 붙여도 -> IllegalStateException
+
+[사실 5] 원본 = [5, 3, 1, 4, 2]
+[사실 5]   filter/map/sorted 결과 = [30, 40, 50]
+[사실 5]   끝난 뒤 원본 = [5, 3, 1, 4, 2]
+[사실 5]   (예외) 원소 객체 자체를 고치면 원본 원소가 바뀜 = [a!, b!]
+
+[사실 6] Stream.iterate(1, x2).limit(10) = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512], 만든 원소 = 10
+[사실 6] Stream.iterate(1, +1) 에서 제곱 > 1000 인 첫 수 = 32, 만든 원소 = 32
+[사실 6] Stream.generate("hi").limit(3) = [hi, hi, hi], 만든 원소 = 3
+[사실 6] (예외) limit 앞에 sorted 를 두거나 limit 없이 collect/count 하면 끝나지 않음 (돌리지 않음)
+
+[사실 7] 1..10 에서 짝수만 골라 x10
+[사실 7]   for 문 두 번: 결과 = [20, 40, 60, 80, 100], 새로 만든 리스트 = 2개 (중간 evens 5칸 + 결과)
+[사실 7]   스트림: 결과 = [20, 40, 60, 80, 100], 새로 만든 리스트 = 1개 (결과만, filter 와 map 사이 목록 없음)
+[사실 7]   (같은 일을 for 문 하나에 if 로 넣어도 리스트 1개: 차이는 '스트림이라서'가 아니라 '한 번에 흘려서')
